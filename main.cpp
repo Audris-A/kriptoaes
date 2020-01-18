@@ -79,18 +79,6 @@ void printState(unsigned char* state) {
     cout << dec;
 }
 
-void addRoundKey(unsigned char* state, unsigned char* roundKey) {
-    for (int i = 0; i < 16; i++) {
-        state[i] = static_cast<unsigned int>(state[i]^roundKey[i]);
-    }
-}
-
-void subBytes(unsigned char* state) {
-    for (int i = 0; i < 16; i++) {
-        state[i] = sBox[state[i]];
-    }
-}
-
 unsigned char gmul(uint8_t a, uint8_t b) {
     uint8_t p = 0; /* the product of the multiplication */
     unsigned char x;
@@ -108,6 +96,18 @@ unsigned char gmul(uint8_t a, uint8_t b) {
     x = p;
 
     return x;
+}
+
+void addRoundKey(unsigned char* state, unsigned char* roundKey) {
+    for (int i = 0; i < 16; i++) {
+        state[i] = static_cast<unsigned int>(state[i]^roundKey[i]);
+    }
+}
+
+void subBytes(unsigned char* state) {
+    for (int i = 0; i < 16; i++) {
+        state[i] = sBox[state[i]];
+    }
 }
 
 void shiftRows(unsigned char* state) {
@@ -134,60 +134,6 @@ void shiftRows(unsigned char* state) {
     state[7] = one;
     state[11] = two;
     state[15] = three;
-}
-
-void inverseShiftRows(unsigned char *state) {
-    //Second Row
-    int one = state[1], two = state[5], three = state[9], four = state[13];
-
-    state[9] = two;
-    state[5] = one;
-    state[1] = four;
-    state[13] = three;
-
-    //Third Row
-    one = state[2], two = state[6], three = state[10], four = state[14];
-
-    state[2] = three;
-    state[6] = four;
-    state[10] = one;
-    state[14] = two;
-
-    //Fourth Row
-    one = state[3], two = state[7], three = state[11], four = state[15];
-
-    state[3] = two;
-    state[7] = three;
-    state[11] = four;
-    state[15] = one;
-}
-
-void inverseSubBytes(unsigned char *state) {
-    for (int i = 0; i < 16; i++){
-        state[i] = invSbox[state[i]];
-    }
-}
-
-void inverseMixColumns(unsigned char *state) {
-    unsigned char newBox[16] = {};
-
-    for (int i = 0; i < 16; i++) {
-        newBox[i] = state[i];
-    }
-
-    unsigned char tBoxOne, tBoxTwo, tBoxThree, tBoxFour, tBoxMinusOne, tBoxMinusTwo, tBoxMinusThree;
-
-    for (int i = 0; i < 16; i++) {
-        if (i == 0 || i == 4 || i == 8 || i == 12) {
-            state[i] = gmul(14, newBox[i])^gmul(11, newBox[i+1])^gmul(13, newBox[i+2])^gmul(9, newBox[i+3]);
-        } else if (i == 1 || i == 5 || i == 9 || i == 13) {
-            state[i] = gmul(9, newBox[i-1]) ^ gmul(14, newBox[i])^gmul(11, newBox[i+1])^gmul(13, newBox[i+2]);
-        } else if (i == 2 || i == 6 || i == 10 || i == 14) {
-            state[i] = gmul(13, newBox[i-2])^gmul(9, newBox[i-1])^gmul(14, newBox[i])^gmul(11, newBox[i+1]);
-        } else if (i == 3 || i == 7 || i == 11 || i == 15) {
-            state[i] = gmul(11, newBox[i-3]) ^ gmul(13, newBox[i-2]) ^ gmul(9, newBox[i-1]) ^ gmul(14, newBox[i]);
-        }
-    }
 }
 
 void mixColumns(unsigned char* state) {
@@ -234,6 +180,60 @@ void subWord(unsigned char *w) {
     w[1] = sBox[w[1]];
     w[2] = sBox[w[2]];
     w[3] = sBox[w[3]];
+}
+
+void inverseSubBytes(unsigned char *state) {
+    for (int i = 0; i < 16; i++){
+        state[i] = invSbox[state[i]];
+    }
+}
+
+void inverseShiftRows(unsigned char *state) {
+    //Second Row
+    int one = state[1], two = state[5], three = state[9], four = state[13];
+
+    state[9] = two;
+    state[5] = one;
+    state[1] = four;
+    state[13] = three;
+
+    //Third Row
+    one = state[2], two = state[6], three = state[10], four = state[14];
+
+    state[2] = three;
+    state[6] = four;
+    state[10] = one;
+    state[14] = two;
+
+    //Fourth Row
+    one = state[3], two = state[7], three = state[11], four = state[15];
+
+    state[3] = two;
+    state[7] = three;
+    state[11] = four;
+    state[15] = one;
+}
+
+void inverseMixColumns(unsigned char *state) {
+    unsigned char newBox[16] = {};
+
+    for (int i = 0; i < 16; i++) {
+        newBox[i] = state[i];
+    }
+
+    unsigned char tBoxOne, tBoxTwo, tBoxThree, tBoxFour, tBoxMinusOne, tBoxMinusTwo, tBoxMinusThree;
+
+    for (int i = 0; i < 16; i++) {
+        if (i == 0 || i == 4 || i == 8 || i == 12) {
+            state[i] = gmul(14, newBox[i])^gmul(11, newBox[i+1])^gmul(13, newBox[i+2])^gmul(9, newBox[i+3]);
+        } else if (i == 1 || i == 5 || i == 9 || i == 13) {
+            state[i] = gmul(9, newBox[i-1]) ^ gmul(14, newBox[i])^gmul(11, newBox[i+1])^gmul(13, newBox[i+2]);
+        } else if (i == 2 || i == 6 || i == 10 || i == 14) {
+            state[i] = gmul(13, newBox[i-2])^gmul(9, newBox[i-1])^gmul(14, newBox[i])^gmul(11, newBox[i+1]);
+        } else if (i == 3 || i == 7 || i == 11 || i == 15) {
+            state[i] = gmul(11, newBox[i-3]) ^ gmul(13, newBox[i-2]) ^ gmul(9, newBox[i-1]) ^ gmul(14, newBox[i]);
+        }
+    }
 }
 
 int main() {
