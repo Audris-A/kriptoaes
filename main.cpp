@@ -91,9 +91,9 @@ void subBytes(unsigned char* state) {
 }
 
 unsigned char gmul(uint8_t a, uint8_t b) {
-	uint8_t p = 0; /* the product of the multiplication */
-	unsigned char x;
-	while (a && b) {
+    uint8_t p = 0; /* the product of the multiplication */
+    unsigned char x;
+    while (a && b) {
         if (b & 1) /* if b is odd, then add the corresponding a to p (final product = sum of all a's corresponding to odd b's) */
             p ^= a; /* since we're in GF(2^m), addition is an XOR */
 
@@ -102,11 +102,11 @@ unsigned char gmul(uint8_t a, uint8_t b) {
         else
             a <<= 1; /* equivalent to a*2 */
         b >>= 1; /* equivalent to b // 2 */
-	}
+    }
 
-	x = p;
+    x = p;
 
-	return x;
+    return x;
 }
 
 void shiftRows(unsigned char* state) {
