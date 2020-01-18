@@ -47,7 +47,7 @@ void printTestBox() {
 
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 16; j += 4) {
-            cout << right << setfill(' ') << setw(2) << static_cast<unsigned int>(testBox[i+j]) << " ";
+            cout << right << setfill('0') << setw(2) << static_cast<unsigned int>(testBox[i+j]) << " ";
         }
         cout << endl;
     }
@@ -145,7 +145,7 @@ void mixColumns () {
     for (int i = 0; i < 16; i++) {
 
         if (i == 0 || i == 4 || i == 8 || i == 12) {
-            testBox[i] = (gmul(2, newBox[i]))^(gmul(2, newBox[i])^newBox[i+1])^newBox[i+2]^newBox[i+3];
+            testBox[i] = (gmul(2, newBox[i]))^(gmul(2, newBox[i+1])^newBox[i+1])^newBox[i+2]^newBox[i+3];
         } else if (i == 1 || i == 5 || i == 9 || i == 13) {
             testBox[i] = newBox[i-1] ^ (gmul(2, newBox[i])) ^ (gmul(2, newBox[i+1])^newBox[i+1]) ^ newBox[i+2];
         } else if (i == 2 || i == 6 || i == 10 || i == 14) {
