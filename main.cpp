@@ -154,11 +154,6 @@ void mixColumns () {
             testBox[i] = (gmul(2, newBox[i-3])^newBox[i-3]) ^ newBox[i-2] ^ newBox[i-1] ^ (gmul(2, newBox[i]));
         }
     }
-
-    // for (int i = 0; i < 16; i++) {
-    //     //cout << testBox[i] << endl;
-    //     cout << static_cast<unsigned int>(testBox[i]) << endl;
-    // }
 }
 
 int main () {
