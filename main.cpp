@@ -158,30 +158,6 @@ void mixColumns(unsigned char* state) {
     }
 }
 
-void rotBytes(unsigned char *w) {
-    unsigned char t = w[0];
-    w[0] = w[1];
-    w[1] = w[2];
-    w[2] = w[3];
-    w[3] = t;
-}
-
-void rotWord(unsigned char *w) {
-    unsigned char t = w[0];
-    w[0] = w[1];
-    w[1] = w[2];
-    w[2] = w[3];
-    w[3] = t;
-}
-
-void subWord(unsigned char *w) {
-    unsigned char t = w[0];
-    w[0] = sBox[w[0]];
-    w[1] = sBox[w[1]];
-    w[2] = sBox[w[2]];
-    w[3] = sBox[w[3]];
-}
-
 void inverseSubBytes(unsigned char *state) {
     for (int i = 0; i < 16; i++){
         state[i] = invSbox[state[i]];
@@ -260,6 +236,49 @@ void inverseMixColumns(unsigned char *state) {
     }
 }
 
+void rotWord(unsigned char *w) {
+    unsigned char t = w[0];
+    w[0] = w[1];
+    w[1] = w[2];
+    w[2] = w[3];
+    w[3] = t;
+}
+
+void subWord(unsigned char *w) {
+    unsigned char t = w[0];
+    w[0] = sBox[w[0]];
+    w[1] = sBox[w[1]];
+    w[2] = sBox[w[2]];
+    w[3] = sBox[w[3]];
+}
+
+void expandKey(unsigned char *key, unsigned char *expandedKey) {
+    for (int i = 0; i < 16; i++) {
+        expandedKey[i] = key[i];
+    }
+
+    int i = 16;
+    int rconIt = 1;
+    unsigned char w[4];
+
+    while (i < 176) {
+        for (int j = 0; j < 4; j++) {
+            w[j] = expandedKey[j + i - 4];
+        }
+
+        if (i % 16 == 0) {
+            rotWord(w);
+            subWord(w);
+            w[0] ^= rcon[rconIt++];
+        }
+
+        for (unsigned char a = 0; a < 4; a++) {
+            expandedKey[i] = expandedKey[i - 16] ^ w[a];
+            i++;
+        }
+    }
+}
+
 int main() {
     unsigned char testBox[16] = {
         0x32, 0x43, 0xF6, 0xa8,
@@ -274,6 +293,21 @@ int main() {
         0xab, 0xf7, 0x15, 0x88,
         0x09, 0xcf, 0x4f, 0x3c
     };
+
+    unsigned char expandedKey[176];
+
+    expandKey(testKey, expandedKey);
+
+    cout << "==" << left << setfill('=') << setw(22) << "Expanded Key" << endl << endl;
+    cout << hex;
+    for (int i = 0; i < 176; i++) {
+        cout << right << setfill('0') << setw(2) << static_cast<unsigned int>(expandedKey[i]);
+        if ((i+1) % 4 == 0) {
+            cout << endl;
+        }
+    }
+    cout << dec;
+    cout << endl << endl;
 
     cout << "==" << left << setfill('=') << setw(22) << "Input" << endl << endl;
     printState(testBox);
