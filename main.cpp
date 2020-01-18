@@ -93,18 +93,61 @@ void shiftRows () {
     testBox[15] = three;
 }
 
+bool checkForOverflow (unsigned char x) {
+    int it = 0;
+    stringstream stream;
+    stream << dec << static_cast<unsigned int>(x);
+    stream >> dec >> it;
+
+    if (it > 127) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+unsigned char gmul(uint8_t a, uint8_t b) {
+	uint8_t p = 0; /* the product of the multiplication */
+	unsigned char x;
+	while (a && b) {
+            if (b & 1) /* if b is odd, then add the corresponding a to p (final product = sum of all a's corresponding to odd b's) */
+                p ^= a; /* since we're in GF(2^m), addition is an XOR */
+
+            if (a & 0x80) /* GF modulo: if a >= 128, then it will overflow when shifted left, so reduce */
+                a = (a << 1) ^ 0x1b; /* XOR with the primitive polynomial x^8 + x^4 + x^3 + x + 1 (0b1_0001_1011) – you can change it but it must be irreducible */
+            else
+                a <<= 1; /* equivalent to a*2 */
+            b >>= 1; /* equivalent to b // 2 */
+	}
+	x = p;
+	return x;
+}
+
 void mixColumns () {
+    stringstream stream;
+    int it = 0;
+    unsigned char newBox[16] = {};
     for (int i = 0; i < 16; i++) {
-        //testBox[i] = static_cast<unsigned int>(testBox[i]^RijndaelPolynomial[j]);
+        //cout << testBox[i] << endl;
+        newBox[i] = testBox[i];
+    }
+    unsigned char tBoxOne, tBoxTwo, tBoxThree, tBoxFour, tBoxMinusOne, tBoxMinusTwo, tBoxMinusThree;
+    for (int i = 0; i < 16; i++) {
+
         if (i == 0 || i == 4 || i == 8 || i == 12) {
-            testBox[i] = (0x02*testBox[i])^(0x03*testBox[i+1])^testBox[i+2]^testBox[i+3];
+            testBox[i] = (gmul(2, newBox[i]))^(gmul(2, newBox[i])^newBox[i+1])^newBox[i+2]^newBox[i+3];
         } else if (i == 1 || i == 5 || i == 9 || i == 13) {
-            testBox[i] = testBox[i-1] ^ (0x02*testBox[i]) ^ (0x03*testBox[i+1]) ^ testBox[i+2];
+            testBox[i] = newBox[i-1] ^ (gmul(2, newBox[i])) ^ (gmul(2, newBox[i+1])^newBox[i+1]) ^ newBox[i+2];
         } else if (i == 2 || i == 6 || i == 10 || i == 14) {
-            testBox[i] = testBox[i-2] ^ testBox[i-1] ^ (0x02*testBox[i]) ^ (0x03*testBox[i+1]);
+            testBox[i] = newBox[i-2] ^ newBox[i-1] ^ (gmul(2, newBox[i])) ^ (gmul(2, newBox[i+1])^newBox[i+1]);
         } else if (i == 3 || i == 7 || i == 11 || i == 15) {
-            testBox[i] = (0x03*testBox[i-3]) ^ testBox[i-2] ^ testBox[i-1] ^ (0x02*testBox[i]);
+            testBox[i] = (gmul(2, newBox[i-3])^newBox[i-3]) ^ newBox[i-2] ^ newBox[i-1] ^ (gmul(2, newBox[i]));
         }
+    }
+
+    for (int i = 0; i < 16; i++) {
+        //cout << testBox[i] << endl;
+        cout << static_cast<unsigned int>(testBox[i]) << endl;
     }
 }
 
@@ -141,10 +184,10 @@ int main () {
     mixColumns();
     cout << "======MIX COLUMNS END===="<< endl;
 
-    for (int i = 0; i < 16; i++) {
+    /*for (int i = 0; i < 16; i++) {
         //cout << testBox[i] << endl;
         cout << hex << static_cast<unsigned int>(testBox[i]) << endl;
-    }
+    }*/
 
     cout << endl;
     //cout << x << endl;
@@ -166,11 +209,14 @@ int main () {
         }
     }
 
-    for (int i = 0; i < 4; i++) {
+    /*for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            cout << hex << box[i][j] << endl;
+            cout << hex << box[i][j];
+            cout << " ";
         }
-    }
+
+        cout << endl;
+    }*/
 
     /*ifstream ifs;
 
