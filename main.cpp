@@ -188,6 +188,30 @@ void inverseSubBytes(unsigned char *state) {
     }
 }
 
+//For now more like a pseudo-code
+/*
+    Padding works like this - if there is a 10 byte text stream
+    it should be padded with 16-10(06 in hex).
+    So it gets padded with the remainding empty byte count
+*/
+void wordPadding(unsigned char *state) {
+    stringstream stream;
+    stream << dec << static_cast<unsigned int>(testBox[i]);
+    stream >> dec >> it;
+
+    if (strlen(state) < 16) {
+        int i = strlen(state);
+        int padd = 16 - strlen(state);
+        unsigned char paddHex;
+        stream << hex << static_cast<unsigned int>(padd);
+        stream >> hex >> paddHex;
+
+        for (int j = 16 - padd; j < 16; j++) {
+            state[j] = paddHex;
+        }
+    }
+}
+
 void inverseShiftRows(unsigned char *state) {
     //Second Row
     int one = state[1], two = state[5], three = state[9], four = state[13];
