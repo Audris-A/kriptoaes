@@ -7,4 +7,5 @@ TO-DO:
   - ~~Shift rows~~;
   - ~~Mix columns~~;
   - ~~Inverse functionality~~:
+  - Text padding(When text < 16 bytes);
   - File encryption/decryption(CBC because Alberts suggested it)
