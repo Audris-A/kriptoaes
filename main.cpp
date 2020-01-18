@@ -164,26 +164,14 @@ void inverseSubBytes(unsigned char *state) {
     }
 }
 
-//For now more like a pseudo-code
-/*
-    Padding works like this - if there is a 10 byte text stream
-    it should be padded with 16-10(06 in hex).
-    So it gets padded with the remainding empty byte count
-*/
 void wordPadding(unsigned char *state) {
-    stringstream stream;
-    stream << dec << static_cast<unsigned int>(testBox[i]);
-    stream >> dec >> it;
+    int stateLen = strlen((char*)state);
 
-    if (strlen(state) < 16) {
-        int i = strlen(state);
-        int padd = 16 - strlen(state);
-        unsigned char paddHex;
-        stream << hex << static_cast<unsigned int>(padd);
-        stream >> hex >> paddHex;
+    if (stateLen < 16) {
+        int padd = 16 - stateLen;
 
         for (int j = 16 - padd; j < 16; j++) {
-            state[j] = paddHex;
+            state[j] = padd;
         }
     }
 }
@@ -293,6 +281,13 @@ int main() {
         0xab, 0xf7, 0x15, 0x88,
         0x09, 0xcf, 0x4f, 0x3c
     };
+
+    if (strlen((char*)testBox) < 16) {
+        cout << "==" << left << setfill('=') << setw(22) << "After Padding" << endl << endl;
+        wordPadding(testBox);
+        printState(testBox);
+        cout << endl << endl;
+    }
 
     unsigned char expandedKey[176];
 
