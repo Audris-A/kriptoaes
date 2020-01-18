@@ -47,12 +47,12 @@ unsigned char rcon[256] = {
     0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb, 0x8d
 };
 
-void printState(unsigned char* table) {
+void printState(unsigned char* state) {
     cout << hex;
 
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 16; j += 4) {
-            cout << right << setfill('0') << setw(2) << static_cast<unsigned int>(table[i+j]) << " ";
+            cout << right << setfill('0') << setw(2) << static_cast<unsigned int>(state[i + j]) << " ";
         }
         cout << endl;
     }
@@ -60,15 +60,15 @@ void printState(unsigned char* table) {
     cout << dec;
 }
 
-void subBytes(unsigned char* state) {
-    for (int i = 0; i < 16; i++) {
-        state[i] = sBox[state[i]];
-    }
-}
-
 void addRoundKey(unsigned char* state, unsigned char* roundKey) {
     for (int i = 0; i < 16; i++) {
         state[i] = static_cast<unsigned int>(state[i]^roundKey[i]);
+    }
+}
+
+void subBytes(unsigned char* state) {
+    for (int i = 0; i < 16; i++) {
+        state[i] = sBox[state[i]];
     }
 }
 
