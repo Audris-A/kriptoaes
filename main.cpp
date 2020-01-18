@@ -5,6 +5,7 @@
 #include <cstring>
 #include <sstream>
 #include <cmath>
+#include <iomanip>
 
 using namespace std;
 
@@ -41,9 +42,18 @@ unsigned char testKey[16] = {
     0x09, 0xcf, 0x4f, 0x3c
 };
 
-unsigned char RijndaelPolynomial[4] = {
-    0x03, 0x01, 0x01, 0x02
-};
+void printTestBox() {
+    cout << hex;
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 16; j += 4) {
+            cout << right << setfill(' ') << setw(2) << static_cast<unsigned int>(testBox[i+j]) << " ";
+        }
+        cout << endl;
+    }
+
+    cout << dec;
+}
 
 /*void addRoundKey () {
     //
@@ -114,7 +124,7 @@ unsigned char gmul(uint8_t a, uint8_t b) {
                 p ^= a; /* since we're in GF(2^m), addition is an XOR */
 
             if (a & 0x80) /* GF modulo: if a >= 128, then it will overflow when shifted left, so reduce */
-                a = (a << 1) ^ 0x1b; /* XOR with the primitive polynomial x^8 + x^4 + x^3 + x + 1 (0b1_0001_1011) – you can change it but it must be irreducible */
+                a = (a << 1) ^ 0x1b; /* XOR with the primitive polynomial x^8 + x^4 + x^3 + x + 1 (0b1_0001_1011) ï¿½ you can change it but it must be irreducible */
             else
                 a <<= 1; /* equivalent to a*2 */
             b >>= 1; /* equivalent to b // 2 */
@@ -145,110 +155,36 @@ void mixColumns () {
         }
     }
 
-    for (int i = 0; i < 16; i++) {
-        //cout << testBox[i] << endl;
-        cout << static_cast<unsigned int>(testBox[i]) << endl;
-    }
+    // for (int i = 0; i < 16; i++) {
+    //     //cout << testBox[i] << endl;
+    //     cout << static_cast<unsigned int>(testBox[i]) << endl;
+    // }
 }
 
 int main () {
-    unsigned char x[17] = "abcdefghijklmnop";
-    unsigned int box[3][3];
-    //Appendix B
+    cout << "==" << left << setfill('=') << setw(22) << "Input" << endl << endl;
+    printTestBox();
+    cout << endl << endl;
 
-    cout << hex << x[0] << endl;
-    cout << endl;
-    //unsigned int xorVal = testBox[0]^key[0];
-    int testins = 25;
-    cout << "Testins" << endl;
-    cout << hex << testins << endl;
-
-    cout << "======XOR=============="<< endl;
+    cout << "==" << left << setfill('=') << setw(22) << "Start of 1st Round" << endl << endl;
     plainXORKey();
-    cout << "======XOR END=========="<< endl;
+    printTestBox();
+    cout << endl << endl;
 
-    cout << "======SUB BYTES========"<< endl;
+    cout << "==" << left << setfill('=') << setw(22) << "After SubBytes" << endl << endl;
     subBytes();
-    cout << "======SUB BYTES END===="<< endl;
+    printTestBox();
+    cout << endl << endl;
 
-    /*for (int i = 0; i < 16; i++) {
-        //cout << testBox[i] << endl;
-        cout << hex << static_cast<unsigned int>(testBox[i]) << endl;
-    }*/
-
-    cout << "======SHIFT ROWS========"<< endl;
+    cout << "==" << left << setfill('=') << setw(22) << "After ShiftRows" << endl << endl;
     shiftRows();
-    cout << "======SHIFT ROWS END===="<< endl;
+    printTestBox();
+    cout << endl << endl;
 
-    cout << "======MIX COLUMNS========"<< endl;
+    cout << "==" << left << setfill('=') << setw(22) << "After MixColumns" << endl << endl;
     mixColumns();
-    cout << "======MIX COLUMNS END===="<< endl;
-
-    /*for (int i = 0; i < 16; i++) {
-        //cout << testBox[i] << endl;
-        cout << hex << static_cast<unsigned int>(testBox[i]) << endl;
-    }*/
-
-    cout << endl;
-    //cout << x << endl;
-
-    //Get symbol hex value
-    int xValue = 0;
-    int yValue = 0;
-    for (int i = 0; i < 16; i++){
-        //cout << hex << static_cast<unsigned int>(x[i]) << endl;
-        if (x[i] != '\0'){
-            box[xValue][yValue] = static_cast<unsigned int>(x[i]);
-        }
-
-        yValue++;
-
-        if (i == 3 || i == 7 || i == 11 || i == 15) {
-            xValue++;
-            yValue = 0;
-        }
-    }
-
-    /*for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            cout << hex << box[i][j];
-            cout << " ";
-        }
-
-        cout << endl;
-    }*/
-
-    /*ifstream ifs;
-
-    ifs.open("test.txt", ios::in);
-
-    if (ifs.fail())
-    {
-        //error
-        cout << "Error" << endl;
-    }
-
-    vector<unsigned char> bytes;
-
-    while (!ifs.eof())
-    {
-        unsigned char byte;
-
-        ifs >> byte;
-        cout << "ifs = " << byte << endl;
-        if (ifs.fail())
-        {
-            //error
-            break;
-        }
-
-        bytes.push_back(byte);
-    }
-
-    ifs.close();
-
-    for(int i : bytes)
-        cout << "i = " << i << endl;*/
+    printTestBox();
+    cout << endl << endl;
 
     return 0;
 }
