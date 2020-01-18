@@ -6,5 +6,5 @@ TO-DO:
   - ~~Substitute bytes~~;
   - ~~Shift rows~~;
   - ~~Mix columns~~;
-  - Inverse functionality
+  - ~~Inverse functionality~~:
   - File encryption/decryption(CBC because Alberts suggested it)
