@@ -372,16 +372,16 @@ int main() {
     }
 
     // handle last bytes
-    if (bytesRead != 16) {
+    if (bytesRead != 0) {
         // padding
         int padd = 16 - bytesRead;
         for (int i = bytesRead; i < 16; i++) {
             bytes[i] = padd;
         }
-        uxorn(bytes, oldBytes, bytesRead);
+        uxorn(bytes, oldBytes, 16);
         aesEncrypt(bytes, expandedKey);
-        fwrite(bytes, 1, bytesRead, outfile);
-        ustrncpy(oldBytes, bytes, bytesRead);
+        fwrite(bytes, 1, 16, outfile);
+        ustrncpy(oldBytes, bytes, 16);
     }
 
     fclose(infile);
@@ -408,19 +408,6 @@ int main() {
         uxorn(bytes, veryOldBytes, 16);
         fwrite(bytes, 1, bytesRead, outfile);
         ustrncpy(veryOldBytes, oldBytes, 16);
-    }
-
-    // handle last bytes
-    if (bytesRead != 16) {
-        // padding
-        int padd = 16 - bytesRead;
-        for (int i = bytesRead; i < 16; i++) {
-            bytes[i] = padd;
-        }
-        aesDecrypt(bytes, expandedKey);
-        uxorn(bytes, oldBytes, bytesRead);
-        fwrite(bytes, 1, bytesRead, outfile);
-        ustrncpy(oldBytes, bytes, bytesRead);
     }
 
     fclose(infile);
