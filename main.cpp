@@ -7,6 +7,8 @@
 #include <cmath>
 #include <iomanip>
 #include <algorithm>
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -328,42 +330,21 @@ int main() {
 
     expandKey(testKey, expandedKey);
 
-    ifstream infile("aesTest.pdf", ios::in | ios::binary);
-    int num;
-    unsigned char plainText[17];
-    int hexCount = 0;
-    infile.ignore(numeric_limits<streamsize>::max());
-    num = infile.gcount();
-    infile.clear();   // Since ignore will have set eof.
-    infile.seekg(0, ios_base::beg);
+    FILE *infile = fopen("aesTest.pdf", "rb");
+    FILE *outfile = fopen("outfile.pdf", "wb");
 
-    vector<unsigned char> bytes2(num, 0);
-    infile.read((char*)&bytes2[0], bytes2.size());
-    for (int i = 0; i < bytes2.size(); ++i) {
-        plainText[hexCount] = bytes2[i];
-        hexCount++;
-        if (hexCount == 16) {
-            plainText[17] = 0;
-            //Start
-            cout << plainText << endl;
-            plainText[0] = 0;
-            hexCount = 0;
-        }
+    int size = 16;
+    unsigned char bytes[16];
+
+    if (infile == NULL || outfile == NULL) {
+        perror("Error opening file");
+        return -1;
     }
 
-    cout << "==" << left << setfill('=') << setw(29) << "Plaintext from input" << endl << endl;
-    printState(testBox);
-    cout << endl << endl;
-
-    cout << "==" << left << setfill('=') << setw(29) << "Cyphertext after aesEncrypt" << endl << endl;
-    aesEncrypt(testBox, expandedKey);
-    printState(testBox);
-    cout << endl << endl;
-
-    cout << "==" << left << setfill('=') << setw(29) << "Plaintext after aesDecrypt" << endl << endl;
-    aesDecrypt(testBox, expandedKey);
-    printState(testBox);
-    cout << endl << endl;
+    int bytesRead;
+    while ((bytesRead = fread(bytes, 1, 16, infile)) > 0) {
+        fwrite(bytes, 1, bytesRead, outfile);
+    }
 
     return 0;
 }
