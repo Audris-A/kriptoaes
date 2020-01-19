@@ -355,6 +355,7 @@ int main() {
 
     unsigned char bytes[16];
     unsigned char oldBytes[16];
+    unsigned char veryOldBytes[16];
 
     ustrncpy(oldBytes, iv, 16);
 
@@ -395,7 +396,7 @@ int main() {
      * DECRYPTION
      */
 
-    ustrncpy(oldBytes, iv, 16);
+    ustrncpy(veryOldBytes, iv, 16);
 
     infile = fopen("cyphertext", "rb");
     outfile = fopen("test2.txt", "wb");
@@ -405,17 +406,13 @@ int main() {
         return -1;
     }
 
-    bytesRead = fread(bytes, 1, 16, infile);
-    aesDecrypt(bytes, expandedKey);
-    uxorn(bytes, oldBytes, 16);
-    fwrite(bytes, 1, bytesRead, outfile);
-
     // CBC decrypt
     while ((bytesRead = fread(bytes, 1, 16, infile)) == 16) {
         ustrncpy(oldBytes, bytes, 16);
         aesDecrypt(bytes, expandedKey);
-        uxorn(bytes, oldBytes, 16);
+        uxorn(bytes, veryOldBytes, 16);
         fwrite(bytes, 1, bytesRead, outfile);
+        ustrncpy(veryOldBytes, oldBytes, 16);
     }
 
     // handle last bytes
