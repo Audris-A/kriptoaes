@@ -8,5 +8,11 @@ TO-DO:
   - ~~Mix columns~~;
   - ~~Inverse functionality~~:
   - ~~Text padding(When text < 16 bytes)~~;
-  - Key management for both encryption and decryption;
-  - File encryption/decryption(CBC because Alberts suggested it)
+  - ~~Key management for both encryption and decryption~~;
+  - ~~File encryption/decryption(CBC because Alberts suggested it)~~;
+  - UI:
+    - File name input:
+      - IV;
+      - Key;
+      - PlainText.
+  - Execution mode functionality.
