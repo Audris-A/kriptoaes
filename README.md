@@ -10,7 +10,7 @@ TO-DO:
   - ~~Text padding(When text < 16 bytes)~~;
   - ~~Key management for both encryption and decryption~~;
   - ~~File encryption/decryption(CBC because Alberts suggested it)~~;
-  - Padding fix;
+  - ~~Padding fix~~;
   - UI:
     - File name input:
       - IV;

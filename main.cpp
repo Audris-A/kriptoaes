@@ -351,6 +351,8 @@ int main() {
     unsigned char bytes[16];
     unsigned char oldBytes[16];
     unsigned char veryOldBytes[16];
+    int padd = 0;
+    int readCycles = 0;
 
     ustrncpy(oldBytes, iv, 16);
 
@@ -369,12 +371,13 @@ int main() {
         aesEncrypt(bytes, expandedKey);
         fwrite(bytes, 1, bytesRead, outfile);
         ustrncpy(oldBytes, bytes, 16);
+        readCycles++;
     }
 
     // handle last bytes
     if (bytesRead != 0) {
         // padding
-        int padd = 16 - bytesRead;
+        padd = 16 - bytesRead;
         for (int i = bytesRead; i < 16; i++) {
             bytes[i] = padd;
         }
@@ -406,8 +409,14 @@ int main() {
         ustrncpy(oldBytes, bytes, 16);
         aesDecrypt(bytes, expandedKey);
         uxorn(bytes, veryOldBytes, 16);
+        if (readCycles == 0 && padd != 0){
+            for (int i = 16 - padd; i < 16; i++){
+                bytes[i] = 0;
+            }
+        }
         fwrite(bytes, 1, bytesRead, outfile);
         ustrncpy(veryOldBytes, oldBytes, 16);
+        readCycles--;
     }
 
     fclose(infile);
