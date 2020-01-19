@@ -6,6 +6,7 @@
 #include <sstream>
 #include <cmath>
 #include <iomanip>
+#include <algorithm>
 
 using namespace std;
 
@@ -326,6 +327,29 @@ int main() {
     unsigned char expandedKey[176];
 
     expandKey(testKey, expandedKey);
+
+    ifstream infile("aesTest.pdf", ios::in | ios::binary);
+    int num;
+    unsigned char plainText[17];
+    int hexCount = 0;
+    infile.ignore(numeric_limits<streamsize>::max());
+    num = infile.gcount();
+    infile.clear();   // Since ignore will have set eof.
+    infile.seekg(0, ios_base::beg);
+
+    vector<unsigned char> bytes2(num, 0);
+    infile.read((char*)&bytes2[0], bytes2.size());
+    for (int i = 0; i < bytes2.size(); ++i) {
+        plainText[hexCount] = bytes2[i];
+        hexCount++;
+        if (hexCount == 16) {
+            plainText[17] = 0;
+            //Start
+            cout << plainText << endl;
+            plainText[0] = 0;
+            hexCount = 0;
+        }
+    }
 
     cout << "==" << left << setfill('=') << setw(29) << "Plaintext from input" << endl << endl;
     printState(testBox);
