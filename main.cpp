@@ -293,57 +293,105 @@ int main() {
 
     expandKey(testKey, expandedKey);
 
-    cout << "==" << left << setfill('=') << setw(22) << "Expanded Key" << endl << endl;
-    cout << hex;
-    for (int i = 0; i < 176; i++) {
-        cout << right << setfill('0') << setw(2) << static_cast<unsigned int>(expandedKey[i]);
-        if ((i+1) % 4 == 0) {
-            cout << endl;
-        }
-    }
-    cout << dec;
-    cout << endl << endl;
+    /**
+    * ENCRIPTION
+    */
 
     cout << "==" << left << setfill('=') << setw(22) << "Input" << endl << endl;
     printState(testBox);
     cout << endl << endl;
 
-    cout << "==" << left << setfill('=') << setw(22) << "Start of 1st Round" << endl << endl;
-    addRoundKey(testBox, testKey);
+    cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << 0 << endl << endl;
+    addRoundKey(testBox, expandedKey);
     printState(testBox);
     cout << endl << endl;
+
+    for (int i = 0; i < 9; i++) {
+        cout << "==" << left << setfill('=') << setw(22) << "After SubBytes" << endl << endl;
+        subBytes(testBox);
+        printState(testBox);
+        cout << endl << endl;
+
+        cout << "==" << left << setfill('=') << setw(22) << "After ShiftRows" << endl << endl;
+        shiftRows(testBox);
+        printState(testBox);
+        cout << endl << endl;
+
+        cout << "==" << left << setfill('=') << setw(22) << "After MixColumns" << endl << endl;
+        mixColumns(testBox);
+        printState(testBox);
+        cout << endl << endl;
+
+        cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << i + 1 << endl << endl;
+        addRoundKey(testBox, &expandedKey[(16 * i) + 16]);
+        printState(testBox);
+        cout << endl << endl;
+    }
 
     cout << "==" << left << setfill('=') << setw(22) << "After SubBytes" << endl << endl;
     subBytes(testBox);
     printState(testBox);
     cout << endl << endl;
-    /*
-    cout << "==" << left << setfill('=') << setw(22) << "After InverseSubBytes" << endl << endl;
-    inverseSubBytes(testBox);
-    printState(testBox);
-    cout << endl << endl;*/
 
     cout << "==" << left << setfill('=') << setw(22) << "After ShiftRows" << endl << endl;
     shiftRows(testBox);
     printState(testBox);
     cout << endl << endl;
 
-    /*
-    cout << "==" << left << setfill('=') << setw(22) << "After  InverseShiftRows" << endl << endl;
-    inverseShiftRows(testBox);
-    printState(testBox);
-    cout << endl << endl;*/
-
-    cout << "==" << left << setfill('=') << setw(22) << "After MixColumns" << endl << endl;
-    mixColumns(testBox);
+    cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << 10 << endl << endl;
+    addRoundKey(testBox, &expandedKey[160]);
     printState(testBox);
     cout << endl << endl;
 
-    /*
-    cout << "==" << left << setfill('=') << setw(22) << "After InverseMixColumns" << endl << endl;
-    inverseMixColumns(testBox);
+    /**
+    * DECRIPTION
+    */
+
+    cout << "==" << left << setfill('=') << setw(22) << "Cypher" << endl << endl;
     printState(testBox);
-    cout << endl << endl;*/
+    cout << endl << endl;
+
+    cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << 0 << endl << endl;
+    addRoundKey(testBox, &expandedKey[160]);
+    printState(testBox);
+    cout << endl << endl;
+
+    for (int i = 9; i > 0; i--) {
+        cout << "==" << left << setfill('=') << setw(22) << "After InverseShiftRows" << endl << endl;
+        inverseShiftRows(testBox);
+        printState(testBox);
+        cout << endl << endl;
+
+        cout << "==" << left << setfill('=') << setw(22) << "After InverseSubBytes" << endl << endl;
+        inverseSubBytes(testBox);
+        printState(testBox);
+        cout << endl << endl;
+
+        cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << 10 - i << endl << endl;
+        addRoundKey(testBox, &expandedKey[16 * i]);
+        printState(testBox);
+        cout << endl << endl;
+
+        cout << "==" << left << setfill('=') << setw(22) << "After InverseMixColumns" << endl << endl;
+        inverseMixColumns(testBox);
+        printState(testBox);
+        cout << endl << endl;
+    }
+
+     cout << "==" << left << setfill('=') << setw(22) << "After InverseShiftRows" << endl << endl;
+    inverseShiftRows(testBox);
+    printState(testBox);
+    cout << endl << endl;
+
+    cout << "==" << left << setfill('=') << setw(22) << "After InverseSubBytes" << endl << endl;
+    inverseSubBytes(testBox);
+    printState(testBox);
+    cout << endl << endl;
+
+    cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << 10 << endl << endl;
+    addRoundKey(testBox, expandedKey);
+    printState(testBox);
+    cout << endl << endl;
 
     return 0;
 }
