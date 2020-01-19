@@ -271,11 +271,6 @@ void expandKey(unsigned char *key, unsigned char *expandedKey) {
 }
 
 void aesEncrypt(unsigned char *plaintxt, unsigned char *expandedKey) {
-    // pad bytes, if not 16
-    if (strlen((char*)plaintxt) < 16) {
-        wordPadding(plaintxt);
-    }
-
     // initial round key addition
     addRoundKey(plaintxt, expandedKey);
 
@@ -399,7 +394,7 @@ int main() {
     ustrncpy(veryOldBytes, iv, 16);
 
     infile = fopen("cyphertext", "rb");
-    outfile = fopen("test2.txt", "wb");
+    outfile = fopen("aesTestSmaller2.pdf", "wb");
 
     if (infile == NULL || outfile == NULL) {
         perror("Error opening file");
