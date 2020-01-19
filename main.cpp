@@ -359,7 +359,7 @@ int main() {
 
     ustrncpy(oldBytes, iv, 16);
 
-    FILE *infile = fopen("test.txt", "rb");
+    FILE *infile = fopen("aesTestSmaller.pdf", "rb");
     FILE *outfile = fopen("cyphertext", "wb");
 
     if (infile == NULL || outfile == NULL) {
