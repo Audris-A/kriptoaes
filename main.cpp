@@ -293,6 +293,18 @@ void aesEncrypt(unsigned char *plaintxt, unsigned char *expandedKey) {
     addRoundKey(plaintxt, &expandedKey[160]);
 }
 
+void ustrncpy(unsigned char *dest, unsigned char *src, int n) {
+    for (int i = 0; i < n; i++) {
+        dest[i] = src[i];
+    }
+}
+
+void uxorn(unsigned char *dest, unsigned char *src, int n) {
+    for (int i = 0; i < n; i++) {
+        dest[i] ^= src[i];
+    }
+}
+
 void aesDecrypt(unsigned char *cyphertxt, unsigned char *expandedKey) {
     // initial round key addition
     addRoundKey(cyphertxt, &expandedKey[160]);
@@ -319,6 +331,13 @@ int main() {
         0xe0, 0x37, 0x07, 0x34
     };
 
+    unsigned char iv[16] = {
+        0x32, 0x43, 0xF6, 0xa8,
+        0xe0, 0x37, 0x07, 0x34,
+        0x88, 0x5a, 0x30, 0x8d,
+        0x31, 0x31, 0x98, 0xa2
+    };
+
     unsigned char testKey[16] = {
         0x2b, 0x7e, 0x15, 0x16,
         0x28, 0xae, 0xd2, 0xa6,
@@ -330,20 +349,39 @@ int main() {
 
     expandKey(testKey, expandedKey);
 
-    FILE *infile = fopen("aesTest.pdf", "rb");
-    FILE *outfile = fopen("outfile.pdf", "wb");
-
-    int size = 16;
     unsigned char bytes[16];
+    unsigned char oldBytes[16];
+
+    ustrncpy(oldBytes, iv, 16);
+
+    FILE *infile = fopen("aesTest.pdf", "rb");
+    FILE *outfile = fopen("outfile", "wb");
 
     if (infile == NULL || outfile == NULL) {
         perror("Error opening file");
         return -1;
     }
 
+    // CBC
     int bytesRead;
-    while ((bytesRead = fread(bytes, 1, 16, infile)) > 0) {
+    while ((bytesRead = fread(bytes, 1, 16, infile)) == 16) {
+        uxorn(bytes, oldBytes, 16);
+        aesEncrypt(bytes, expandedKey);
         fwrite(bytes, 1, bytesRead, outfile);
+        ustrncpy(oldBytes, bytes, 16);
+    }
+
+    // handle last bytes
+    if (bytesRead != 16) {
+        // padding
+        int padd = 16 - bytesRead;
+        for (int i = bytesRead; i < 16; i++) {
+            bytes[i] = padd;
+        }
+        uxorn(bytes, oldBytes, bytesRead);
+        aesEncrypt(bytes, expandedKey);
+        fwrite(bytes, 1, bytesRead, outfile);
+        ustrncpy(oldBytes, bytes, bytesRead);
     }
 
     return 0;
