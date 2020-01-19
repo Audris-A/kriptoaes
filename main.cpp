@@ -349,20 +349,24 @@ int main() {
 
     expandKey(testKey, expandedKey);
 
+    /**
+     * ENCRYPTION
+     */
+
     unsigned char bytes[16];
     unsigned char oldBytes[16];
 
     ustrncpy(oldBytes, iv, 16);
 
-    FILE *infile = fopen("aesTest.pdf", "rb");
-    FILE *outfile = fopen("outfile", "wb");
+    FILE *infile = fopen("test.txt", "rb");
+    FILE *outfile = fopen("cyphertext", "wb");
 
     if (infile == NULL || outfile == NULL) {
         perror("Error opening file");
         return -1;
     }
 
-    // CBC
+    // CBC encrypt
     int bytesRead;
     while ((bytesRead = fread(bytes, 1, 16, infile)) == 16) {
         uxorn(bytes, oldBytes, 16);
@@ -383,6 +387,52 @@ int main() {
         fwrite(bytes, 1, bytesRead, outfile);
         ustrncpy(oldBytes, bytes, bytesRead);
     }
+
+    fclose(infile);
+    fclose(outfile);
+
+    /**
+     * DECRYPTION
+     */
+
+    ustrncpy(oldBytes, iv, 16);
+
+    infile = fopen("cyphertext", "rb");
+    outfile = fopen("test2.txt", "wb");
+
+    if (infile == NULL || outfile == NULL) {
+        perror("Error opening file");
+        return -1;
+    }
+
+    bytesRead = fread(bytes, 1, 16, infile);
+    aesDecrypt(bytes, expandedKey);
+    uxorn(bytes, oldBytes, 16);
+    fwrite(bytes, 1, bytesRead, outfile);
+
+    // CBC decrypt
+    while ((bytesRead = fread(bytes, 1, 16, infile)) == 16) {
+        ustrncpy(oldBytes, bytes, 16);
+        aesDecrypt(bytes, expandedKey);
+        uxorn(bytes, oldBytes, 16);
+        fwrite(bytes, 1, bytesRead, outfile);
+    }
+
+    // handle last bytes
+    if (bytesRead != 16) {
+        // padding
+        int padd = 16 - bytesRead;
+        for (int i = bytesRead; i < 16; i++) {
+            bytes[i] = padd;
+        }
+        aesDecrypt(bytes, expandedKey);
+        uxorn(bytes, oldBytes, bytesRead);
+        fwrite(bytes, 1, bytesRead, outfile);
+        ustrncpy(oldBytes, bytes, bytesRead);
+    }
+
+    fclose(infile);
+    fclose(outfile);
 
     return 0;
 }
