@@ -267,6 +267,47 @@ void expandKey(unsigned char *key, unsigned char *expandedKey) {
     }
 }
 
+void aesEncrypt(unsigned char *plaintxt, unsigned char *expandedKey) {
+    // pad bytes, if not 16
+    if (strlen((char*)plaintxt) < 16) {
+        wordPadding(plaintxt);
+    }
+
+    // initial round key addition
+    addRoundKey(plaintxt, expandedKey);
+
+    // rounds 1 - 9
+    for (int i = 0; i < 9; i++) {
+        subBytes(plaintxt);
+        shiftRows(plaintxt);
+        mixColumns(plaintxt);
+        addRoundKey(plaintxt, &expandedKey[(16 * i) + 16]);
+    }
+
+    // final round 10 without mixColumns
+    subBytes(plaintxt);
+    shiftRows(plaintxt);
+    addRoundKey(plaintxt, &expandedKey[160]);
+}
+
+void aesDecrypt(unsigned char *cyphertxt, unsigned char *expandedKey) {
+    // initial round key addition
+    addRoundKey(cyphertxt, &expandedKey[160]);
+
+    // rounds 1 - 9
+    for (int i = 9; i > 0; i--) {
+        inverseShiftRows(cyphertxt);
+        inverseSubBytes(cyphertxt);
+        addRoundKey(cyphertxt, &expandedKey[16 * i]);
+        inverseMixColumns(cyphertxt);
+    }
+
+    // final round 10 without inverseMixColumns
+    inverseShiftRows(cyphertxt);
+    inverseSubBytes(cyphertxt);
+    addRoundKey(cyphertxt, expandedKey);
+}
+
 int main() {
     unsigned char testBox[16] = {
         0x32, 0x43, 0xF6, 0xa8,
@@ -282,114 +323,21 @@ int main() {
         0x09, 0xcf, 0x4f, 0x3c
     };
 
-    if (strlen((char*)testBox) < 16) {
-        cout << "==" << left << setfill('=') << setw(22) << "After Padding" << endl << endl;
-        wordPadding(testBox);
-        printState(testBox);
-        cout << endl << endl;
-    }
-
     unsigned char expandedKey[176];
 
     expandKey(testKey, expandedKey);
 
-    /**
-    * ENCRIPTION
-    */
-
-    cout << "==" << left << setfill('=') << setw(22) << "Input" << endl << endl;
+    cout << "==" << left << setfill('=') << setw(29) << "Plaintext from input" << endl << endl;
     printState(testBox);
     cout << endl << endl;
 
-    cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << 0 << endl << endl;
-    addRoundKey(testBox, expandedKey);
+    cout << "==" << left << setfill('=') << setw(29) << "Cyphertext after aesEncrypt" << endl << endl;
+    aesEncrypt(testBox, expandedKey);
     printState(testBox);
     cout << endl << endl;
 
-    for (int i = 0; i < 9; i++) {
-        cout << "==" << left << setfill('=') << setw(22) << "After SubBytes" << endl << endl;
-        subBytes(testBox);
-        printState(testBox);
-        cout << endl << endl;
-
-        cout << "==" << left << setfill('=') << setw(22) << "After ShiftRows" << endl << endl;
-        shiftRows(testBox);
-        printState(testBox);
-        cout << endl << endl;
-
-        cout << "==" << left << setfill('=') << setw(22) << "After MixColumns" << endl << endl;
-        mixColumns(testBox);
-        printState(testBox);
-        cout << endl << endl;
-
-        cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << i + 1 << endl << endl;
-        addRoundKey(testBox, &expandedKey[(16 * i) + 16]);
-        printState(testBox);
-        cout << endl << endl;
-    }
-
-    cout << "==" << left << setfill('=') << setw(22) << "After SubBytes" << endl << endl;
-    subBytes(testBox);
-    printState(testBox);
-    cout << endl << endl;
-
-    cout << "==" << left << setfill('=') << setw(22) << "After ShiftRows" << endl << endl;
-    shiftRows(testBox);
-    printState(testBox);
-    cout << endl << endl;
-
-    cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << 10 << endl << endl;
-    addRoundKey(testBox, &expandedKey[160]);
-    printState(testBox);
-    cout << endl << endl;
-
-    /**
-    * DECRIPTION
-    */
-
-    cout << "==" << left << setfill('=') << setw(22) << "Cypher" << endl << endl;
-    printState(testBox);
-    cout << endl << endl;
-
-    cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << 0 << endl << endl;
-    addRoundKey(testBox, &expandedKey[160]);
-    printState(testBox);
-    cout << endl << endl;
-
-    for (int i = 9; i > 0; i--) {
-        cout << "==" << left << setfill('=') << setw(22) << "After InverseShiftRows" << endl << endl;
-        inverseShiftRows(testBox);
-        printState(testBox);
-        cout << endl << endl;
-
-        cout << "==" << left << setfill('=') << setw(22) << "After InverseSubBytes" << endl << endl;
-        inverseSubBytes(testBox);
-        printState(testBox);
-        cout << endl << endl;
-
-        cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << 10 - i << endl << endl;
-        addRoundKey(testBox, &expandedKey[16 * i]);
-        printState(testBox);
-        cout << endl << endl;
-
-        cout << "==" << left << setfill('=') << setw(22) << "After InverseMixColumns" << endl << endl;
-        inverseMixColumns(testBox);
-        printState(testBox);
-        cout << endl << endl;
-    }
-
-     cout << "==" << left << setfill('=') << setw(22) << "After InverseShiftRows" << endl << endl;
-    inverseShiftRows(testBox);
-    printState(testBox);
-    cout << endl << endl;
-
-    cout << "==" << left << setfill('=') << setw(22) << "After InverseSubBytes" << endl << endl;
-    inverseSubBytes(testBox);
-    printState(testBox);
-    cout << endl << endl;
-
-    cout << "==" << left << setfill('=') << setw(22) << "After Add Round Key" << 10 << endl << endl;
-    addRoundKey(testBox, expandedKey);
+    cout << "==" << left << setfill('=') << setw(29) << "Plaintext after aesDecrypt" << endl << endl;
+    aesDecrypt(testBox, expandedKey);
     printState(testBox);
     cout << endl << endl;
 
