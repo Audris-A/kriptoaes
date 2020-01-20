@@ -475,9 +475,39 @@ void cbcDecrypt(string infname, string outfname, string keyfname, string ivfname
 }
 
 int main() {
+    string infname, outfname, keyfname, ivfname;
+    int mode;
 
-    cbcEncrypt("aesTestSmaller.pdf", "cyphertext", "keyfile.txt", "ivfile.txt");
-    cbcDecrypt("cyphertext", "aesTestSmaller2.pdf", "keyfile.txt", "ivfile.txt");
+    cout << "Choose mode" << endl
+         << "1. Encrypt" << endl
+         << "2. Decrypt" << endl
+         << "Choose: ";
+    cin >> mode;
+
+    if (mode != 1 && mode != 2) {
+        cout << "Error: no such mode" << endl;
+        return -1;
+    }
+
+    cout << "Enter input filename: ";
+    cin >> infname;
+
+    cout << "Enter output filename: ";
+    cin >> outfname;
+
+    cout << "Enter key filename: ";
+    cin >> keyfname;
+
+    cout << "Enter iv filename: ";
+    cin >> ivfname;
+
+    if (mode == 1) {
+        cbcEncrypt(infname, outfname, keyfname, ivfname);
+        cout << "ENCRIPTION SUCCESSFUL" << endl;
+    } else {
+        cbcDecrypt(infname, outfname, keyfname, ivfname);
+        cout << "DECRYPTION SUCCESSFUL" << endl;
+    }
 
     return 0;
 }
