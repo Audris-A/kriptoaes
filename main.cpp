@@ -381,7 +381,7 @@ int main() {
     return 0;*/
     ustrncpy(oldBytes, iv, 16);
 
-    FILE *infile = fopen("aesTestSmaller.pdf", "rb");
+    FILE *infile = fopen("dummyText.txt", "rb");
     FILE *outfile = fopen("cyphertext", "wb");
 
     if (infile == NULL || outfile == NULL) {
@@ -421,7 +421,7 @@ int main() {
     ustrncpy(veryOldBytes, iv, 16);
 
     infile = fopen("cyphertext", "rb");
-    outfile = fopen("aesTestSmaller2.pdf", "wb");
+    outfile = fopen("dummyTextdos.txt", "wb");
 
     if (infile == NULL || outfile == NULL) {
         perror("Error opening file");
@@ -439,13 +439,19 @@ int main() {
             int equalCount = 0;
             int lastCharVal = (int)bytes[15];
 
-            for (int i = 16; i > 0; i--){
+            for (int i = 15; i > 0; i--){
                 if ((int)bytes[i] == lastCharVal) {
                     equalCount++;
+                } else {
+                    break;
                 }
             }
 
-            fwrite(&bytes, 1, (16 - equalCount), outfile);
+            if (equalCount > 1) {
+                fwrite(&bytes, 1, (16 - equalCount), outfile);
+            } else {
+                fwrite(bytes, 1, bytesRead, outfile);
+            }
 
             break;
         } else {
