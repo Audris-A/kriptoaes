@@ -5,6 +5,7 @@
 #include <cstring>
 #include <sstream>
 #include <cmath>
+#include <string>
 #include <iomanip>
 #include <algorithm>
 #include <stdio.h>
@@ -318,79 +319,47 @@ void aesDecrypt(unsigned char *cyphertxt, unsigned char *expandedKey) {
     addRoundKey(cyphertxt, expandedKey);
 }
 
-int main() {
-    unsigned char testBox[16] = {
-        0x32, 0x43, 0xF6, 0xa8,
-        0x88, 0x5a, 0x30, 0x8d,
-        0x31, 0x31, 0x98, 0xa2,
-        0xe0, 0x37, 0x07, 0x34
-    };
+void cbcEncrypt(string infname, string outfname, string keyfname, string ivfname) {
+    FILE *keyfile = fopen(keyfname.c_str(), "rb");
+    FILE *ivfile = fopen(ivfname.c_str(), "rb");
+    FILE *infile = fopen(infname.c_str(), "rb");
+    FILE *outfile = fopen(outfname.c_str(), "wb");
 
-    unsigned char iv[16] = {
-        0x32, 0x43, 0xF6, 0xa8,
-        0xe0, 0x37, 0x07, 0x34,
-        0x88, 0x5a, 0x30, 0x8d,
-        0x31, 0x31, 0x98, 0xa2
-    };
+    if (keyfile == NULL || ivfile == NULL || infile == NULL || outfile == NULL) {
+        perror("Error opening file");
+        exit(1);
+    }
 
-    unsigned char testKey[16] = {
-        0x2b, 0x7e, 0x15, 0x16,
-        0x28, 0xae, 0xd2, 0xa6,
-        0xab, 0xf7, 0x15, 0x88,
-        0x09, 0xcf, 0x4f, 0x3c
-    };
+    int bytesRead;
+
+    unsigned char key[16];
+    unsigned char iv[16];
+
+    bytesRead = fread(key, 1, 16, keyfile);
+    if (bytesRead != 16) {
+        cout << "Error: key file should contain atleast 16 bytes" << endl;
+        exit(1);
+    }
+    fread(iv, 1, 16, ivfile);
+
+    if (bytesRead != 16) {
+        cout << "Error: ivfile file should contain atleast 16 bytes" << endl;
+        exit(1);
+    }
+
+    fclose(keyfile);
+    fclose(ivfile);
 
     unsigned char expandedKey[176];
 
-    expandKey(testKey, expandedKey);
-
-    /**
-     * ENCRYPTION
-     */
-
     unsigned char bytes[16];
     unsigned char oldBytes[16];
-    unsigned char veryOldBytes[16];
-    unsigned char checkBytes[16];
 
-    fpos_t pos;
-    int checkedBytes = 0;
-    char keyFile[255];
-    int padd = 0;
-    int mode = 0;
-    bool lastCycle = false;
-    /*cout << "Choose programs mode - 0(default) or 1(manual)" << endl;
-    cin >> mode;
-
-    if (mode == 1) {
-        cout << "Input key file name!" << endl;
-        cin >> keyFile;
-
-        fstream keyF(keyFile + ".txt");
-        unsigned int a;
-        while (keyF >> hex >> a) {
-            cout << a << endl;
-        }
-
-        cout << "Input initialization vector file name!" << endl;
-        cin >> initVectorFile;
-
-        cout << "Input plain text file name!" << endl;
-        cin >> plainTextFile;
-    }
-    return 0;*/
     ustrncpy(oldBytes, iv, 16);
 
-    FILE *infile = fopen("dummyText.txt", "rb");
-    FILE *outfile = fopen("cyphertext", "wb");
-
-    if (infile == NULL || outfile == NULL) {
-        perror("Error opening file");
-        return -1;
-    }
+    expandKey(key, expandedKey);
 
     // CBC encrypt
-    int bytesRead;
     while ((bytesRead = fread(bytes, 1, 16, infile)) == 16) {
         uxorn(bytes, oldBytes, 16);
         aesEncrypt(bytes, expandedKey);
@@ -400,7 +369,7 @@ int main() {
 
     // handle last bytes
     if (bytesRead != 0) {
-        // padding
+        int padd;
         padd = 16 - bytesRead;
         for (int i = bytesRead; i < 16; i++) {
             bytes[i] = padd;
@@ -413,20 +382,55 @@ int main() {
 
     fclose(infile);
     fclose(outfile);
+}
 
-    /**
-     * DECRYPTION
-     */
+void cbcDecrypt(string infname, string outfname, string keyfname, string ivfname) {
+    FILE *keyfile = fopen(keyfname.c_str(), "rb");
+    FILE *ivfile = fopen(ivfname.c_str(), "rb");
+    FILE *infile = fopen(infname.c_str(), "rb");
+    FILE *outfile = fopen(outfname.c_str(), "wb");
+
+    if (keyfile == NULL || ivfile == NULL || infile == NULL || outfile == NULL) {
+        perror("Error opening file");
+        exit(1);
+    }
+
+    int bytesRead;
+
+    unsigned char key[16];
+    unsigned char iv[16];
+
+    bytesRead = fread(key, 1, 16, keyfile);
+    if (bytesRead != 16) {
+        cout << "Error: key file should contain atleast 16 bytes" << endl;
+        exit(1);
+    }
+    fread(iv, 1, 16, ivfile);
+
+    if (bytesRead != 16) {
+        cout << "Error: ivfile file should contain atleast 16 bytes" << endl;
+        exit(1);
+    }
+
+    fclose(keyfile);
+    fclose(ivfile);
+
+    unsigned char expandedKey[176];
+
+    unsigned char bytes[16];
+    unsigned char oldBytes[16];
+    unsigned char veryOldBytes[16];
+
+    unsigned char checkBytes[16];
+    int checkedBytes;
+    fpos_t pos;
+
+    ustrncpy(oldBytes, iv, 16);
+
+    expandKey(key, expandedKey);
 
     ustrncpy(veryOldBytes, iv, 16);
 
-    infile = fopen("cyphertext", "rb");
-    outfile = fopen("dummyTextdos.txt", "wb");
-
-    if (infile == NULL || outfile == NULL) {
-        perror("Error opening file");
-        return -1;
-    }
 
     // CBC decrypt
     while ((bytesRead = fread(bytes, 1, 16, infile)) == 16) {
@@ -468,6 +472,12 @@ int main() {
 
     fclose(infile);
     fclose(outfile);
+}
+
+int main() {
+
+    cbcEncrypt("aesTestSmaller.pdf", "cyphertext", "keyfile.txt", "ivfile.txt");
+    cbcDecrypt("cyphertext", "aesTestSmaller2.pdf", "keyfile.txt", "ivfile.txt");
 
     return 0;
 }
