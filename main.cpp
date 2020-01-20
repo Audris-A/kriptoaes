@@ -351,9 +351,34 @@ int main() {
     unsigned char bytes[16];
     unsigned char oldBytes[16];
     unsigned char veryOldBytes[16];
-    int padd = 0;
-    int readCycles = 0;
+    unsigned char checkBytes[16];
 
+    fpos_t pos;
+    int checkedBytes = 0;
+    char keyFile[255];
+    int padd = 0;
+    int mode = 0;
+    bool lastCycle = false;
+    /*cout << "Choose programs mode - 0(default) or 1(manual)" << endl;
+    cin >> mode;
+
+    if (mode == 1) {
+        cout << "Input key file name!" << endl;
+        cin >> keyFile;
+
+        fstream keyF(keyFile + ".txt");
+        unsigned int a;
+        while (keyF >> hex >> a) {
+            cout << a << endl;
+        }
+
+        cout << "Input initialization vector file name!" << endl;
+        cin >> initVectorFile;
+
+        cout << "Input plain text file name!" << endl;
+        cin >> plainTextFile;
+    }
+    return 0;*/
     ustrncpy(oldBytes, iv, 16);
 
     FILE *infile = fopen("aesTestSmaller.pdf", "rb");
@@ -371,7 +396,6 @@ int main() {
         aesEncrypt(bytes, expandedKey);
         fwrite(bytes, 1, bytesRead, outfile);
         ustrncpy(oldBytes, bytes, 16);
-        readCycles++;
     }
 
     // handle last bytes
@@ -406,17 +430,34 @@ int main() {
 
     // CBC decrypt
     while ((bytesRead = fread(bytes, 1, 16, infile)) == 16) {
+        fgetpos(infile,&pos);
+        checkedBytes = fread(checkBytes, 1, 16, infile);
+
+        if (checkedBytes == 0) {
+            aesDecrypt(bytes, expandedKey);
+            uxorn(bytes, veryOldBytes, 16);
+            int equalCount = 0;
+            int lastCharVal = (int)bytes[15];
+
+            for (int i = 16; i > 0; i--){
+                if ((int)bytes[i] == lastCharVal) {
+                    equalCount++;
+                }
+            }
+
+            fwrite(&bytes, 1, (16 - equalCount), outfile);
+
+            break;
+        } else {
+            // Give the value to bytes;
+            fsetpos(infile,&pos);
+        }
+
         ustrncpy(oldBytes, bytes, 16);
         aesDecrypt(bytes, expandedKey);
         uxorn(bytes, veryOldBytes, 16);
-        if (readCycles == 0 && padd != 0){
-            for (int i = 16 - padd; i < 16; i++){
-                bytes[i] = 0;
-            }
-        }
         fwrite(bytes, 1, bytesRead, outfile);
         ustrncpy(veryOldBytes, oldBytes, 16);
-        readCycles--;
     }
 
     fclose(infile);
